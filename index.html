@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Network Security — Learning Track</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Firebase (compat build = simple global, no bundler) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  body{margin:0;background:#020617}
+  .font-sans{font-family:'IBM Plex Sans',sans-serif}
+  .font-display{font-family:'Fraunces',serif}
+  .font-mono{font-family:'IBM Plex Mono',monospace}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- ===================================================================== -->
+<!-- STEP 1: paste your Firebase config between the braces below.           -->
+<!-- (Firebase console → Project settings → Your apps → SDK setup/config)   -->
+<!-- Until you do, the page works fine but saves only on THIS device.       -->
+<!-- ===================================================================== -->
+<script>
+  window.FIREBASE_CONFIG = {
+    apiKey: "PASTE_API_KEY",
+    authDomain: "PASTE_PROJECT.firebaseapp.com",
+    projectId: "PASTE_PROJECT_ID",
+    appId: "PASTE_APP_ID"
+  };
+</script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ---- Firebase init (only if you've pasted a real config) ----
+let useCloud = false, auth = null, db = null;
+try {
+  const cfg = window.FIREBASE_CONFIG || {};
+  if (cfg.apiKey && cfg.apiKey.indexOf("PASTE") === -1 && window.firebase) {
+    firebase.initializeApp(cfg);
+    auth = firebase.auth();
+    db = firebase.firestore();
+    useCloud = true;
+  }
+} catch (e) { useCloud = false; }
+
+// ---- helpers ----
+const VID = (id) => "https://www.youtube.com/watch?v=" + id;
+const PL  = (id) => "https://www.youtube.com/playlist?list=" + id;
+
+const Svg = ({ className, children }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{children}</svg>
+);
+const IShield   = (p) => <Svg {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></Svg>;
+const IDown     = (p) => <Svg {...p}><path d="m6 9 6 6 6-6"/></Svg>;
+const IRight    = (p) => <Svg {...p}><path d="m9 18 6-6-6-6"/></Svg>;
+const ICheck    = (p) => <Svg {...p}><path d="M20 6 9 17l-5-5"/></Svg>;
+const IYoutube  = (p) => <Svg {...p}><rect x="2" y="5" width="20" height="14" rx="4"/><path d="m10 9 5 3-5 3z"/></Svg>;
+const IList     = (p) => <Svg {...p}><path d="M3 6h11"/><path d="M3 12h11"/><path d="M3 18h7"/><path d="m16 12 5 3-5 3z"/></Svg>;
+const IStar     = (p) => <Svg {...p}><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></Svg>;
+const INote     = (p) => <Svg {...p}><path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10l5-5V5a2 2 0 0 0-2-2z"/><path d="M15 21v-5a1 1 0 0 1 1-1h5"/></Svg>;
+const IExternal = (p) => <Svg {...p}><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></Svg>;
+const IReset    = (p) => <Svg {...p}><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></Svg>;
+const ISearch   = (p) => <Svg {...p}><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></Svg>;
+const ICloud    = (p) => <Svg {...p}><path d="M17.5 19a4.5 4.5 0 0 0 0-9h-1.8A7 7 0 1 0 4 16.3"/><path d="m9 15 2 2 4-4"/></Svg>;
+
+// ---- curriculum ----
+const SECTIONS = [
+  { id:"m1", title:"Network Attacks & Mitigation", topics:[
+    { id:"t-ddos", title:"DoS / DDoS", level:"Medium", resType:"video",
+      resUrl:VID("ilhGh9CEIwM"),
+      depth:["Volumetric: UDP/ICMP floods, amplification (DNS, NTP, memcached)","Protocol: SYN flood, Smurf, fragmentation","Application-layer: HTTP flood, Slowloris","Mitigations: rate limiting, SYN cookies, Anycast, scrubbing, BGP RTBH, CDN/WAF"],
+      interview:"“Walk me through detecting & mitigating a DDoS.” Answer in STAR form using your real ASA/Palo Alto rate-limiting experience.",
+      channels:["The Cyber Mentor","David Bombal","Practical Networking"] },
+    { id:"t-mitm", title:"Man-in-the-Middle (MITM)", level:"Medium", resType:"video",
+      resUrl:VID("SYAux_gSCck"),
+      depth:["ARP spoofing/poisoning, DNS spoofing, SSL stripping","Rogue AP / evil twin, session hijacking","Mitigations: TLS + HSTS, cert pinning, DNSSEC","L2 defenses: Dynamic ARP Inspection, DHCP snooping, 802.1X"],
+      interview:"Explain the mechanics, then map mitigations to OSI layers (L2 DAI vs L7 TLS/HSTS).",
+      channels:["David Bombal","IppSec","Practical Networking"] },
+    { id:"t-lateral", title:"Lateral Movement", level:"Hard", resType:"video",
+      resUrl:VID("uzzDuY6hz4Y"),
+      depth:["Pass-the-hash, pass-the-ticket, RDP/SMB abuse","Credential dumping, living-off-the-land","Mitigations: segmentation, least privilege, EDR","Micro-segmentation to shrink blast radius"],
+      interview:"Be ready to explain how segmentation + least privilege limit how far an attacker spreads after initial access.",
+      channels:["The Cyber Mentor","John Hammond","IppSec"] },
+  ]},
+  { id:"m2", title:"Firewalls (Deep)", topics:[
+    { id:"t-fwtypes", title:"Firewall Types & Architecture", level:"Easy", resType:"video",
+      resUrl:VID("kDEX1HXybrU"),
+      depth:["Packet-filtering vs stateful vs proxy/application","NGFW: App-ID, IPS, TLS inspection","Palo Alto App-ID/Content-ID; Cisco ASA security levels"],
+      interview:"Name the types, explain when each fits, anchor with your Palo Alto / ASA hands-on work.",
+      channels:["David Bombal","Practical Networking"] },
+    { id:"t-acl", title:"ACL Design & Hygiene", level:"Medium", resType:"video",
+      resUrl:VID("NF-YdKcPwiE"),
+      depth:["Least-privilege rules, implicit deny, rule ordering","Shadowed / redundant / orphaned rules","Logging, change management, auditing methodology"],
+      interview:"Your strongest answer — have 1–2 concrete ACL audit findings ready (problem → risk → fix).",
+      channels:["Practical Networking","Your experience"] },
+  ]},
+  { id:"m3", title:"Crypto & Protocols", topics:[
+    { id:"t-tls", title:"TLS & PKI", level:"Hard", resType:"playlist",
+      resUrl:PL("PLIFyRwBY_4bTwRX__Zn4-letrtpSj1mzY"),
+      depth:["TLS 1.2 vs 1.3 handshake flow","Symmetric vs asymmetric crypto","Certificates, CA chain of trust, PKI","Perfect Forward Secrecy"],
+      interview:"Be able to whiteboard the TLS handshake step by step.",
+      channels:["Practical Networking","David Bombal"] },
+    { id:"t-vpn", title:"VPN & IPsec", level:"Medium", resType:"video",
+      resUrl:VID("R-JUOpCgTZc"),
+      depth:["IPsec: IKE phases, ESP vs AH, tunnel vs transport","SSL VPN basics","Site-to-site vs remote-access tradeoffs"],
+      interview:"“IPsec vs SSL VPN — which and why?” Cover security, deployment, use case.",
+      channels:["Practical Networking","David Bombal"] },
+  ]},
+  { id:"m4", title:"Architecture & Frameworks", topics:[
+    { id:"t-zt", title:"Zero Trust & Segmentation", level:"Easy", resType:"video",
+      resUrl:VID("yn6CPQ9RioA"),
+      depth:["Never trust, always verify — identity-centric","Micro-segmentation, software-defined perimeter (ZTNA)","Zero Trust vs perimeter model; defense-in-depth"],
+      interview:"Near-guaranteed trend question. Define crisply, contrast with perimeter defense.",
+      channels:["SANS","Microsoft / Azure sessions"] },
+    { id:"t-frameworks", title:"Security Frameworks & Risk", level:"Easy", resType:"video",
+      resUrl:VID("q0tBR0Iv-kE"),
+      depth:["NIST CSF: Identify / Protect / Detect / Respond / Recover","ISO 27001 and CIS Controls","Risk assessment methodology"],
+      interview:"“How would you secure a corporate network?” → risk assessment, controls, monitoring; cite NIST/ISO.",
+      channels:["SANS","Framework source docs"] },
+    { id:"t-trends", title:"Emerging Trends (XDR/SOAR)", level:"Easy", resType:"video",
+      resUrl:VID("VNp35Uw_bSM"),
+      depth:["AI/ML in threat detection","XDR vs EDR vs SIEM","SOAR / security automation"],
+      interview:"A sentence on each signals you stay current — interviewers like this.",
+      channels:["SANS","Vendor talks (YouTube)"] },
+  ]},
+  { id:"m5", title:"SIEM / Detection / Incident Response", topics:[
+    { id:"t-siem", title:"SIEM & Detection", level:"Medium", resType:"video",
+      resUrl:VID("9RfsRn7m7OE"),
+      depth:["Log aggregation & correlation","Use-case building, alert tuning","Mapping detections to MITRE ATT&CK"],
+      interview:"Explain how a SIEM gathers and correlates logs for real-time alerting.",
+      channels:["John Hammond","SANS DFIR"] },
+    { id:"t-ir", title:"Incident Response", level:"Medium", resType:"video",
+      resUrl:VID("-uwENcQzXj8"),
+      depth:["Lifecycle: Prepare → Identify → Contain → Eradicate → Recover → Lessons","Playbooks & runbooks","Evidence handling basics"],
+      interview:"Walk a full IR scenario start to finish, ending on lessons-learned/hardening.",
+      channels:["SANS DFIR"] },
+  ]},
+  { id:"m6", title:"Cloud-Native Security", topics:[
+    { id:"t-azurenet", title:"Azure Network Controls", level:"Hard", resType:"video",
+      resUrl:VID("nVZYDhB_M64"),
+      depth:["NSG vs Azure Firewall vs NVA","UDR / forced tunneling","Service vs private endpoints","VNet peering, hub-spoke"],
+      interview:"Where most candidates are weak — your Jio Azure auditing experience shines here.",
+      channels:["Microsoft Mechanics","fwd:cloudsec (YouTube)"] },
+    { id:"t-clouddef", title:"Cloud DDoS & Zero Trust", level:"Medium", resType:"playlist",
+      resUrl:PL("PLlVtbbG169nGccbp8VSpAozu3w9xSQJoY"),
+      depth:["Azure DDoS Protection Standard, WAF","Conditional access, identity as perimeter","Zero Trust mapped to cloud controls"],
+      interview:"Contrast cloud-native DDoS mitigation with the on-prem approach.",
+      channels:["Microsoft Mechanics","fwd:cloudsec (YouTube)"] },
+  ]},
+];
+
+const CHANNEL_PAGES = {
+  "David Bombal":"https://www.youtube.com/@davidbombal","John Hammond":"https://www.youtube.com/@_JohnHammond",
+  "IppSec":"https://www.youtube.com/@ippsec","Practical Networking":"https://www.youtube.com/@PracticalNetworking",
+  "Microsoft Mechanics":"https://www.youtube.com/@MicrosoftMechanics","fwd:cloudsec (YouTube)":"https://www.youtube.com/@fwdcloudsec",
+  "The Cyber Mentor":"https://www.youtube.com/c/thecybermentor","SANS DFIR":"https://www.youtube.com/@SANSDigitalForensics",
+};
+const channelUrl = (c) => CHANNEL_PAGES[c] || null;
+
+const DEEP_VIDEOS = {
+  "t-ddos":[{t:"DDoS Attack Explained — PowerCert",u:VID("ilhGh9CEIwM")},{t:"How a DDoS Attack Works — prevent & defend",u:VID("YthJmMZ0WkA")},{t:"DDoS Explained in 2 Minutes",u:VID("Rt4rna2LBZE")}],
+  "t-mitm":[{t:"What Is a Man-in-the-Middle Attack?",u:VID("SYAux_gSCck")},{t:"MITM in About a Minute",u:VID("83LOa-dYi_A")},{t:"MITM via ARP Poisoning — Ettercap demo",u:VID("0rRDI8AxY7I")}],
+  "t-lateral":[{t:"What is Lateral Movement? — SANS",u:VID("uzzDuY6hz4Y")},{t:"How Hackers Move Across Networks",u:VID("0IMSkbUKlSs")},{t:"Lateral Movement Explained (Cybersecurity 101)",u:VID("fDy3G5BBkVI")}],
+  "t-fwtypes":[{t:"What is a Firewall? — PowerCert",u:VID("kDEX1HXybrU")},{t:"Firewall Basics — types & comparison",u:VID("GXbqFBKwM2o")},{t:"Firewall Animated — types of firewall",u:VID("B6524OCPPzE")}],
+  "t-acl":[{t:"Access Control List Explained",u:VID("NF-YdKcPwiE")},{t:"Access Control List (ACL) Overview",u:VID("_Pg38IrrsiQ")},{t:"What Is ACL & How to Configure It — FS",u:VID("PLQNkgnhZPw")}],
+  "t-tls":[{t:"Practical TLS — full deep-dive series",u:PL("PLIFyRwBY_4bTwRX__Zn4-letrtpSj1mzY"),pl:true},{t:"Symmetric vs Asymmetric Encryption",u:VID("zqCVssPNosQ")}],
+  "t-vpn":[{t:"VPN Explained — PowerCert",u:VID("R-JUOpCgTZc")},{t:"What is a VPN & How Does it Work?",u:VID("7uKIB1TxGc4")}],
+  "t-zt":[{t:"Zero Trust Explained in 4 mins — IBM",u:VID("yn6CPQ9RioA")},{t:"Cybersecurity and Zero Trust — IBM",u:VID("FMMWSLIcaME")},{t:"Why Implement Zero Trust — IBM",u:VID("lT11tGaEC3s")}],
+  "t-frameworks":[{t:"NIST Cybersecurity Framework Explained",u:VID("q0tBR0Iv-kE")},{t:"The NIST CSF Core Explained",u:VID("91jb4SFnN5s")},{t:"NIST CSF 2.0 — step-by-step",u:VID("tDgxcJ52Dg8")}],
+  "t-trends":[{t:"SIEM, EDR, XDR, MDR & SOAR Explained",u:VID("lhoa0_z-7Xk")},{t:"Threat Hunting Explained — IBM",u:VID("VNp35Uw_bSM")}],
+  "t-siem":[{t:"What Is SIEM? — IBM",u:VID("9RfsRn7m7OE")},{t:"SIEM, EDR, XDR, MDR & SOAR Explained",u:VID("lhoa0_z-7Xk")}],
+  "t-ir":[{t:"Incident Response Process — CertMike",u:VID("-uwENcQzXj8")},{t:"Cybersecurity Incident Response: The 7 Phases",u:VID("tKXxror5HCE")}],
+  "t-azurenet":[{t:"AZ-700 Azure Networking Study Cram — John Savill",u:VID("nVZYDhB_M64")},{t:"AZ-700 Azure Network Engineer — full playlist",u:PL("PLlVtbbG169nGeFODKRZhjqdSxFpSPXVOa"),pl:true}],
+  "t-clouddef":[{t:"Azure Master Class — full playlist",u:PL("PLlVtbbG169nGccbp8VSpAozu3w9xSQJoY"),pl:true},{t:"Zero Trust Explained — IBM",u:VID("yn6CPQ9RioA")}],
+};
+
+const DEPTH_LINKS = {
+  "t-ddos":[VID("ilhGh9CEIwM"),VID("ilhGh9CEIwM"),VID("Rt4rna2LBZE"),VID("YthJmMZ0WkA")],
+  "t-mitm":[VID("0rRDI8AxY7I"),VID("SYAux_gSCck"),VID("SYAux_gSCck"),VID("83LOa-dYi_A")],
+  "t-lateral":[VID("0IMSkbUKlSs"),VID("fDy3G5BBkVI"),VID("uzzDuY6hz4Y"),VID("uzzDuY6hz4Y")],
+  "t-fwtypes":[VID("GXbqFBKwM2o"),VID("kDEX1HXybrU"),VID("B6524OCPPzE")],
+  "t-acl":[VID("NF-YdKcPwiE"),VID("_Pg38IrrsiQ"),VID("PLQNkgnhZPw")],
+  "t-tls":[PL("PLIFyRwBY_4bTwRX__Zn4-letrtpSj1mzY"),VID("zqCVssPNosQ"),PL("PLIFyRwBY_4bTwRX__Zn4-letrtpSj1mzY"),PL("PLIFyRwBY_4bTwRX__Zn4-letrtpSj1mzY")],
+  "t-vpn":[VID("R-JUOpCgTZc"),VID("7uKIB1TxGc4"),VID("R-JUOpCgTZc")],
+  "t-zt":[VID("yn6CPQ9RioA"),VID("FMMWSLIcaME"),VID("lT11tGaEC3s")],
+  "t-frameworks":[VID("q0tBR0Iv-kE"),VID("91jb4SFnN5s"),VID("tDgxcJ52Dg8")],
+  "t-trends":[VID("VNp35Uw_bSM"),VID("lhoa0_z-7Xk"),VID("lhoa0_z-7Xk")],
+  "t-siem":[VID("9RfsRn7m7OE"),VID("9RfsRn7m7OE"),VID("lhoa0_z-7Xk")],
+  "t-ir":[VID("-uwENcQzXj8"),VID("tKXxror5HCE"),VID("tKXxror5HCE")],
+  "t-azurenet":[VID("nVZYDhB_M64"),PL("PLlVtbbG169nGeFODKRZhjqdSxFpSPXVOa"),PL("PLlVtbbG169nGeFODKRZhjqdSxFpSPXVOa"),VID("nVZYDhB_M64")],
+  "t-clouddef":[PL("PLlVtbbG169nGccbp8VSpAozu3w9xSQJoY"),VID("yn6CPQ9RioA"),VID("yn6CPQ9RioA")],
+};
+
+const ALL_TOPICS = SECTIONS.flatMap(s=>s.topics);
+const ALL_IDS = ALL_TOPICS.map(t=>t.id);
+const STORAGE_KEY = "netsec_lms_progress_v1";
+const LEVEL_COLORS = { Easy:"text-emerald-400 border-emerald-500/40 bg-emerald-500/10", Medium:"text-amber-400 border-amber-500/40 bg-amber-500/10", Hard:"text-rose-400 border-rose-500/40 bg-rose-500/10" };
+const LEVEL_DOT = { Easy:"bg-emerald-400", Medium:"bg-amber-400", Hard:"bg-rose-400" };
+
+function App(){
+  const [progress,setProgress]=useState(()=>{ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||{}; }catch(e){ return {}; }});
+  const [user,setUser]=useState(null);
+  const [syncState,setSyncState]=useState(useCloud ? "signedout" : "local"); // local | signedout | synced
+  const [open,setOpen]=useState(()=>Object.fromEntries(SECTIONS.map(s=>[s.id,true])));
+  const [detail,setDetail]=useState({});
+  const [noteOpen,setNoteOpen]=useState({});
+  const [tab,setTab]=useState("all");
+  const [query,setQuery]=useState("");
+  const progressRef=useRef(progress); progressRef.current=progress;
+  const writeTimer=useRef(null);
+
+  // auth state
+  useEffect(()=>{
+    if(!useCloud) return;
+    const unsub=auth.onAuthStateChanged(u=>{ setUser(u); setSyncState(u?"synced":"signedout"); });
+    return ()=>unsub();
+  },[]);
+
+  // live subscription to this user's progress
+  useEffect(()=>{
+    if(!useCloud||!user) return;
+    const ref=db.collection("users").doc(user.uid);
+    const unsub=ref.onSnapshot(snap=>{
+      if(snap.exists && snap.data().progress){
+        const remote=snap.data().progress;
+        setProgress(remote);
+        try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(remote)); }catch(e){}
+      } else {
+        // first time on the cloud: push whatever is on this device up
+        ref.set({progress:progressRef.current||{}},{merge:true});
+      }
+    });
+    return ()=>unsub();
+  },[user]);
+
+  // persist a new progress object: local immediately + cloud (debounced)
+  const persist=(next)=>{
+    setProgress(next);
+    try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(next)); }catch(e){}
+    if(useCloud && user){
+      clearTimeout(writeTimer.current);
+      writeTimer.current=setTimeout(()=>{
+        db.collection("users").doc(user.uid).set({progress:next},{merge:true}).catch(()=>{});
+      },400);
+    }
+  };
+
+  const signIn=()=>{ auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(()=>{}); };
+  const signOut=()=>{ auth.signOut(); };
+
+  const p=(id)=>progress[id]||{};
+  const isDone=(id)=>!!p(id).done;
+  const isStar=(id)=>!!p(id).starred;
+  const noteOf=(id)=>p(id).notes||"";
+  const toggleDone=(id)=>persist({...progress,[id]:{...progress[id],done:!(progress[id]||{}).done}});
+  const toggleStar=(id)=>persist({...progress,[id]:{...progress[id],starred:!(progress[id]||{}).starred}});
+  const setNote=(id,notes)=>persist({...progress,[id]:{...progress[id],notes}});
+
+  const doneCount=ALL_IDS.filter(isDone).length;
+  const pct=Math.round((doneCount/ALL_IDS.length)*100);
+  const byLevel=(l)=>ALL_TOPICS.filter(t=>t.level===l);
+  const doneByLevel=(l)=>byLevel(l).filter(t=>isDone(t.id)).length;
+  const matches=(t)=>{ if(query&&!t.title.toLowerCase().includes(query.toLowerCase()))return false; if(tab==="todo")return !isDone(t.id); if(tab==="done")return isDone(t.id); if(tab==="revision")return isStar(t.id); return true; };
+  let counter=0;
+  const resetAll=()=>{ if(window.confirm("Reset all progress, notes and stars?")) persist({}); };
+
+  const Ring=()=>{ const r=26,c=2*Math.PI*r,off=c-(pct/100)*c; return (
+    <svg width="68" height="68" viewBox="0 0 68 68" className="-rotate-90">
+      <circle cx="34" cy="34" r={r} fill="none" stroke="rgb(30 41 59)" strokeWidth="6"/>
+      <circle cx="34" cy="34" r={r} fill="none" stroke="rgb(16 185 129)" strokeWidth="6" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={off}/>
+    </svg>); };
+
+  const SyncBadge=()=>{
+    if(syncState==="local") return <span className="font-mono text-[11px] text-slate-500 flex items-center gap-1"><ICloud className="w-3.5 h-3.5"/> this device only</span>;
+    if(syncState==="signedout") return <button onClick={signIn} className="font-mono text-xs px-3 py-1.5 rounded-lg bg-sky-500 text-slate-950 hover:bg-sky-400 transition-colors flex items-center gap-1.5"><ICloud className="w-3.5 h-3.5"/> Sign in to sync</button>;
+    return <div className="flex items-center gap-2"><span className="font-mono text-[11px] text-emerald-400 flex items-center gap-1"><ICloud className="w-3.5 h-3.5"/> synced{user&&user.email?" · "+user.email:""}</span><button onClick={signOut} className="font-mono text-[11px] text-slate-500 hover:text-rose-400">sign out</button></div>;
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans">
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        <header className="mb-5">
+          <div className="flex items-center justify-between gap-3 flex-wrap mb-1">
+            <div className="flex items-center gap-2"><IShield className="w-5 h-5 text-emerald-400"/><span className="font-mono text-xs tracking-widest text-emerald-400 uppercase">Interview Prep Sheet</span></div>
+            <SyncBadge/>
+          </div>
+          <h1 className="font-display text-3xl sm:text-4xl text-slate-50 leading-tight">Network Security Engineer — Learning Track</h1>
+          <p className="text-slate-400 mt-1.5 text-sm">{ALL_IDS.length} topics in order. Tick them off, tap a depth point to watch, star for revision, add notes.</p>
+        </header>
+
+        <section className="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-4 flex items-center gap-5 flex-wrap">
+          <div className="relative flex items-center justify-center"><Ring/><span className="absolute font-mono text-sm text-slate-100">{pct}%</span></div>
+          <div><div className="font-mono text-xs text-slate-500 uppercase tracking-wider">Overall progress</div><div className="font-display text-2xl text-slate-50">{doneCount}<span className="text-slate-600 text-lg"> / {ALL_IDS.length}</span></div></div>
+          <div className="flex items-center gap-4 ml-auto text-sm">
+            {["Easy","Medium","Hard"].map(l=>(<div key={l} className="flex items-center gap-1.5"><span className={"w-2.5 h-2.5 rounded-full "+LEVEL_DOT[l]}/><span className="text-slate-400">{l}</span><span className="font-mono text-slate-200">{doneByLevel(l)}<span className="text-slate-600">/{byLevel(l).length}</span></span></div>))}
+          </div>
+        </section>
+
+        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {[["all","All"],["todo","To do"],["done","Done"],["revision","★ Revision"]].map(([k,label])=>(<button key={k} onClick={()=>setTab(k)} className={"font-mono text-xs px-3 py-1.5 rounded-full border transition-colors "+(tab===k?"bg-emerald-500 text-slate-950 border-emerald-500":"border-slate-700 text-slate-400 hover:border-slate-600")}>{label}</button>))}
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5"><ISearch className="w-3.5 h-3.5 text-slate-500"/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search topic" className="bg-transparent text-sm text-slate-200 placeholder-slate-600 focus:outline-none w-28"/></div>
+            <button onClick={resetAll} className="flex items-center gap-1 text-xs text-slate-500 hover:text-rose-400 transition-colors"><IReset className="w-3.5 h-3.5"/> reset</button>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {SECTIONS.map(sec=>{
+            const visible=sec.topics.filter(matches); const total=sec.topics.length, done=sec.topics.filter(t=>isDone(t.id)).length;
+            if(visible.length===0) return null;
+            return (<section key={sec.id} className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+              <button onClick={()=>setOpen(o=>({...o,[sec.id]:!o[sec.id]}))} className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-800/40 transition-colors">
+                {open[sec.id]?<IDown className="w-4 h-4 text-slate-500 shrink-0"/>:<IRight className="w-4 h-4 text-slate-500 shrink-0"/>}
+                <h2 className="font-display text-lg text-slate-50 flex-1">{sec.title}</h2>
+                <div className="w-24 h-1.5 bg-slate-800 rounded-full overflow-hidden hidden sm:block"><div className="h-full bg-emerald-500 rounded-full" style={{width:(done/total*100)+"%"}}/></div>
+                <span className="font-mono text-xs text-slate-500 shrink-0 w-10 text-right">{done}/{total}</span>
+              </button>
+              {open[sec.id]&&(<div className="border-t border-slate-800">
+                <div className="hidden sm:grid gap-2 px-4 py-2 text-[11px] font-mono uppercase tracking-wider text-slate-500 border-b border-slate-800/70" style={{gridTemplateColumns:"32px 28px 1fr 150px 44px 44px 84px"}}><span>#</span><span>Done</span><span>Topic</span><span>Resource</span><span>Note</span><span>Rev</span><span className="text-right">Level</span></div>
+                {visible.map(t=>{ counter+=1; const idx=counter; const done=isDone(t.id); const browse=t.resType==="browse"; const ResIcon=t.resType==="playlist"?IList:IYoutube; return (
+                  <div key={t.id} className="border-b border-slate-800/60 last:border-0">
+                    <div className="grid gap-2 px-4 py-2.5 items-center" style={{gridTemplateColumns:"32px 28px 1fr 150px 44px 44px 84px"}}>
+                      <span className="font-mono text-xs text-slate-600">{idx}</span>
+                      <button onClick={()=>toggleDone(t.id)} className="flex justify-center"><span className={"w-5 h-5 rounded-md border flex items-center justify-center transition-colors "+(done?"bg-emerald-500 border-emerald-500":"border-slate-600 hover:border-slate-400")}>{done&&<ICheck className="w-3.5 h-3.5 text-slate-950"/>}</span></button>
+                      <button onClick={()=>setDetail(d=>({...d,[t.id]:!d[t.id]}))} className={"text-left text-sm flex items-center gap-1.5 "+(done?"text-slate-500":"text-slate-100")}><span className={done?"line-through":""}>{t.title}</span>{detail[t.id]?<IDown className="w-3.5 h-3.5 text-slate-600"/>:<IRight className="w-3.5 h-3.5 text-slate-600"/>}</button>
+                      <a href={t.resUrl} target="_blank" rel="noopener noreferrer" className={"inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md font-medium transition-colors "+(browse?"bg-amber-500/15 text-amber-300 border border-amber-500/40 hover:bg-amber-500/25":"bg-rose-500/15 text-rose-300 border border-rose-500/40 hover:bg-rose-500/25")}><ResIcon className="w-3.5 h-3.5"/>{t.resType==="playlist"?"Playlist":browse?"Browse":"Watch"}</a>
+                      <button onClick={()=>setNoteOpen(n=>({...n,[t.id]:!n[t.id]}))} className="flex justify-center"><INote className={"w-4 h-4 "+(noteOf(t.id)?"text-sky-400":"text-slate-600 hover:text-slate-400")}/></button>
+                      <button onClick={()=>toggleStar(t.id)} className="flex justify-center"><IStar className={"w-4 h-4 "+(isStar(t.id)?"text-amber-400 fill-amber-400":"text-slate-600 hover:text-slate-400")}/></button>
+                      <span className="flex justify-end"><span className={"font-mono text-[10px] px-2 py-0.5 rounded border "+LEVEL_COLORS[t.level]}>{t.level}</span></span>
+                    </div>
+                    {noteOpen[t.id]&&(<div className="px-4 pb-3 sm:pl-14"><textarea value={noteOf(t.id)} onChange={e=>setNote(t.id,e.target.value)} placeholder="Your notes / STAR example…" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-sky-500/60 resize-y min-h-[60px]"/></div>)}
+                    {detail[t.id]&&(<div className="px-4 pb-4 sm:pl-14 space-y-3">
+                      <div><div className="font-mono text-[11px] text-emerald-400 uppercase tracking-wider mb-1.5">Learn in depth — tap a point to watch</div>
+                        <ul className="space-y-1.5">{t.depth.map((d,i)=>{ const u=DEPTH_LINKS[t.id]&&DEPTH_LINKS[t.id][i]; const isPl=u&&u.indexOf("playlist?list=")!==-1; const Ico=isPl?IList:IYoutube; return (
+                          <li key={i} className="text-sm flex gap-2 items-start"><span className="text-slate-600 mt-0.5">▸</span>{u?(<a href={u} target="_blank" rel="noopener noreferrer" className="group flex items-start gap-1.5 text-slate-300 hover:text-rose-300 transition-colors"><span className="underline decoration-slate-700 decoration-dotted underline-offset-2 group-hover:decoration-rose-400">{d}</span><span className={"inline-flex items-center justify-center w-4 h-4 rounded shrink-0 mt-0.5 "+(isPl?"bg-amber-500/15 text-amber-300":"bg-rose-500/15 text-rose-300")}><Ico className="w-3 h-3"/></span></a>):<span className="text-slate-300">{d}</span>}</li>); })}</ul>
+                      </div>
+                      {DEEP_VIDEOS[t.id]&&(<div><div className="font-mono text-[11px] text-rose-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5"><IYoutube className="w-3.5 h-3.5"/> Deep-dive videos — click to watch</div>
+                        <ul className="space-y-1.5">{DEEP_VIDEOS[t.id].map((v,i)=>{ const Ico=v.pl?IList:IYoutube; return (<li key={i} className="flex items-center gap-2"><a href={v.u} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-slate-200 hover:text-rose-300 transition-colors"><span className={"inline-flex items-center justify-center w-5 h-5 rounded shrink-0 "+(v.pl?"bg-amber-500/15 text-amber-300":"bg-rose-500/15 text-rose-300")}><Ico className="w-3.5 h-3.5"/></span><span>{v.t}{v.pl?"  (playlist)":""}</span></a></li>); })}</ul>
+                      </div>)}
+                      <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-2.5"><div className="font-mono text-[11px] text-amber-400 uppercase tracking-wider mb-1">Interview angle</div><p className="text-sm text-slate-300 leading-relaxed">{t.interview}</p></div>
+                      <div className="flex items-center gap-2 flex-wrap"><span className="font-mono text-[11px] text-slate-500 uppercase tracking-wider">More channels:</span>{t.channels.map(c=>{ const u=channelUrl(c); return u?(<a key={c} href={u} target="_blank" rel="noopener noreferrer" className="text-xs text-sky-300 hover:text-sky-200 inline-flex items-center gap-1">{c}<IExternal className="w-3 h-3 opacity-70"/></a>):<span key={c} className="text-xs text-slate-400">{c}</span>; })}</div>
+                    </div>)}
+                  </div>); })}
+              </div>)}
+            </section>);
+          })}
+        </div>
+
+        <footer className="mt-8 text-center"><p className="font-mono text-xs text-slate-600">{useCloud?"Sign in with Google to sync progress across all your devices.":"Saved on this device. Add a Firebase config to sync across devices."}</p></footer>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
