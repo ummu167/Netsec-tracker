@@ -72,6 +72,10 @@ const ICheck    = (p) => <Svg {...p}><path d="M20 6 9 17l-5-5"/></Svg>;
 const IYoutube  = (p) => <Svg {...p}><rect x="2" y="5" width="20" height="14" rx="4"/><path d="m10 9 5 3-5 3z"/></Svg>;
 const IList     = (p) => <Svg {...p}><path d="M3 6h11"/><path d="M3 12h11"/><path d="M3 18h7"/><path d="m16 12 5 3-5 3z"/></Svg>;
 const IDoc      = (p) => <Svg {...p}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/></Svg>;
+const IBook     = (p) => <Svg {...p}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></Svg>;
+const IBrain    = (p) => <Svg {...p}><path d="M12 5a3 3 0 0 0-6 .5 3 3 0 0 0-1.5 5.5A2.5 2.5 0 0 0 6 16a3 3 0 0 0 6 .5z"/><path d="M12 5a3 3 0 0 1 6 .5 3 3 0 0 1 1.5 5.5A2.5 2.5 0 0 1 18 16a3 3 0 0 1-6 .5z"/></Svg>;
+const IShuffle  = (p) => <Svg {...p}><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="M4 4l5 5"/></Svg>;
+const IX        = (p) => <Svg {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></Svg>;
 const IStar     = (p) => <Svg {...p}><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></Svg>;
 const INote     = (p) => <Svg {...p}><path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10l5-5V5a2 2 0 0 0-2-2z"/><path d="M15 21v-5a1 1 0 0 1 1-1h5"/></Svg>;
 const IExternal = (p) => <Svg {...p}><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></Svg>;
@@ -267,9 +271,41 @@ const DEPTH_LINKS = {
   "t-dlp":[R("https://powerdmarc.com/what-is-data-loss-prevention-dlp/"),R("https://deviceauthority.com/symmetric-encryption-vs-asymmetric-encryption/"),R("https://powerdmarc.com/what-is-data-loss-prevention-dlp/")],
 };
 
+const QUESTIONS = [
+  {id:"q-ddos-1", t:"t-ddos", q:"Which DDoS category exhausts raw bandwidth and is measured in Gbps?", options:["Volumetric (UDP/ICMP floods, DNS amplification)","Protocol (SYN flood, Smurf)","Application-layer (HTTP flood, Slowloris)","Reflection without amplification"], correct:0, a:"Volumetric attacks saturate the pipe (Gbps). Protocol attacks exhaust connection-state on firewalls/servers; application-layer attacks exhaust app resources at low bandwidth and are hardest to spot."},
+  {id:"q-ddos-2", t:"t-ddos", q:"Why can on-box firewall filtering NOT fully stop a large volumetric DDoS?", options:["The upstream link is saturated before traffic reaches the firewall","Firewalls cannot read packet headers","Volumetric attacks only target Layer 7","SYN cookies are disabled by default"], correct:0, a:"Once the inbound pipe is full, dropping packets on-box is too late — the bandwidth is already consumed upstream. Volumetric defense needs provider scrubbing, Anycast, or cloud capacity."},
+  {id:"q-mitm-1", t:"t-mitm", q:"Which Layer-2 control best prevents ARP poisoning on a switch?", options:["Dynamic ARP Inspection with DHCP snooping","Port mirroring (SPAN)","Disabling Spanning Tree","Enabling jumbo frames"], correct:0, a:"DAI validates ARP packets against the DHCP snooping binding table and drops forged replies. SPAN is for monitoring, not prevention."},
+  {id:"q-mitm-2", t:"t-mitm", q:"What single control most directly makes intercepted MITM traffic useless?", options:["Strong end-to-end encryption (TLS) with certificate validation","A faster switch","Static IP addressing","Disabling ICMP"], correct:0, a:"Encryption renders on-path traffic unreadable; TLS with proper cert validation plus HSTS is the core defense against interception."},
+  {id:"q-lateral-1", t:"t-lateral", q:"Which pair of controls most directly limits attacker lateral movement?", options:["Network segmentation plus least privilege","Longer DHCP leases plus NTP","Jumbo frames plus QoS","Disabling IPv6 alone"], correct:0, a:"Segmentation/micro-segmentation blocks east-west traffic to shrink the blast radius; least privilege limits what a stolen credential can reach. EDR adds detection of pass-the-hash and pivoting."},
+  {id:"q-dns-1", t:"t-dns", q:"What protection does DNSSEC actually provide?", options:["Integrity and origin authentication of DNS records","Encryption of DNS queries for privacy","Faster recursive resolution","Blocking all DDoS against resolvers"], correct:0, a:"DNSSEC signs records so resolvers can reject spoofed or poisoned responses. It does NOT encrypt queries — that is DoH/DoT."},
+  {id:"q-fwtypes-1", t:"t-fwtypes", q:"What key capability does a stateful firewall have that a stateless one lacks?", options:["Tracks connection state and auto-permits return traffic","Always runs faster on every flow","Operates only at Layer 2","Needs no rule configuration"], correct:0, a:"Stateful firewalls track sessions, so return traffic is permitted contextually. Stateless filters each packet against static rules with no session awareness."},
+  {id:"q-acl-1", t:"t-acl", q:"A specific deny sits below a broad permit-any that already matches the same traffic. What is this?", options:["A shadowed rule","An implicit deny","A stateful rule","A NAT exemption"], correct:0, a:"Firewalls evaluate top-down, first match wins, so the lower rule never fires — it is shadowed. Fix by reordering the rules."},
+  {id:"q-acl-2", t:"t-acl", q:"During an ACL audit, the biggest least-privilege red flag is:", options:["Overly broad any-any permit rules","Rules with logging enabled","Rules tied to a change ticket","Use of named objects"], correct:0, a:"Any-any permits violate least privilege and widen exposure. Logging, change tickets, and named objects are good practice, not problems."},
+  {id:"q-tls-1", t:"t-tls", q:"In TLS, which encryption type protects the bulk session data?", options:["Symmetric","Asymmetric","Hashing only","None — plaintext after handshake"], correct:0, a:"Asymmetric crypto is used in the handshake (authentication and key agreement); the fast symmetric key then encrypts the actual session traffic."},
+  {id:"q-tls-2", t:"t-tls", q:"What does ephemeral Diffie-Hellman in TLS 1.3 provide?", options:["Forward secrecy","Faster symmetric encryption","Certificate issuance","Payload compression"], correct:0, a:"Ephemeral keys mean a later private-key compromise cannot decrypt past sessions — that is forward secrecy, mandatory in TLS 1.3."},
+  {id:"q-vpn-1", t:"t-vpn", q:"For an always-on site-to-site tunnel between two gateways, which fits best?", options:["IPsec (Layer 3)","SSL/clientless VPN (Layer 7)","RDP","SNMP"], correct:0, a:"IPsec encrypts whole IP packets at L3 — ideal for site-to-site. SSL/clientless VPN suits remote-user access to specific apps."},
+  {id:"q-zt-1", t:"t-zt", q:"Which statement best captures Zero Trust?", options:["Never trust, always verify — authorize every request on identity, device, and context","Trust everything inside the corporate LAN","Encrypt only external traffic","Replace firewalls with VLANs"], correct:0, a:"Zero Trust removes implicit network-location trust; identity becomes the new perimeter (ZTNA), enforced with micro-segmentation."},
+  {id:"q-frameworks-1", t:"t-frameworks", q:"Which lists the five NIST CSF core functions in order?", options:["Identify, Protect, Detect, Respond, Recover","Plan, Build, Run, Audit, Retire","Scan, Patch, Verify, Report, Repeat","Detect, Deny, Disrupt, Degrade, Deceive"], correct:0, a:"The NIST CSF functions are Identify, Protect, Detect, Respond, Recover. ISO 27001 and CIS Controls complement it."},
+  {id:"q-trends-1", t:"t-trends", q:"What best distinguishes XDR from EDR and SIEM?", options:["It correlates signals across endpoint, network, email, and cloud","It only watches a single endpoint","It is just log storage for compliance","It replaces all firewalls"], correct:0, a:"EDR is endpoint-focused; SIEM aggregates and correlates logs for alerting and compliance; XDR unifies cross-domain telemetry; SOAR then automates response."},
+  {id:"q-siem-1", t:"t-siem", q:"What most determines whether a SIEM is actually useful?", options:["Well-built correlation use-cases and alert tuning","The number of dashboards","Color-coded disks","Disabling log normalization"], correct:0, a:"A SIEM ingests, normalizes, and correlates logs, but its value comes from good detection use-cases and tuning to cut false positives."},
+  {id:"q-ir-1", t:"t-ir", q:"Which is the correct NIST incident response order?", options:["Preparation, Detection and Analysis, Containment, Eradication, Recovery, Lessons Learned","Containment, Preparation, Recovery, Detection, Eradication","Detection, Recovery, Containment, Preparation, Eradication","Eradication, Detection, Recovery, Lessons Learned, Containment"], correct:0, a:"NIST 800-61: Preparation, then Detection and Analysis, Containment, Eradication, Recovery, and Post-incident Lessons Learned. Preserve evidence throughout."},
+  {id:"q-idsips-1", t:"t-idsips", q:"Which statement describes an IPS (versus an IDS)?", options:["Sits inline and can actively block traffic","Only sits out-of-band and alerts","Cannot use signatures","Works only at Layer 2"], correct:0, a:"IDS detects and alerts out-of-band (tap/SPAN); IPS is inline and blocks. Signature detection catches known attacks; anomaly detection catches novel ones with more false positives."},
+  {id:"q-attack-1", t:"t-attack", q:"How does MITRE ATT&CK differ from the Cyber Kill Chain?", options:["It is a non-sequential matrix of real-world tactics and techniques","It is a strict 7-stage linear sequence","It covers only physical security","It is a compliance certification"], correct:0, a:"The Kill Chain is 7 sequential stages — break one to stop the attack. ATT&CK is a granular, non-linear matrix of TTPs used to map detections and threat-hunt."},
+  {id:"q-azurenet-1", t:"t-azurenet", q:"Which Azure control is a free, stateful L3/L4 filter at subnet or NIC level?", options:["Network Security Group (NSG)","Azure Firewall","Azure Bastion","Application Gateway WAF"], correct:0, a:"NSGs are free stateful L3/L4 rules for micro-segmentation. Azure Firewall is a managed L3 to L7 firewall (FQDN rules, IDPS, TLS inspection) centralized in a hub."},
+  {id:"q-azurenet-2", t:"t-azurenet", q:"Which gives a PaaS service a private IP inside your VNet, removing public exposure?", options:["Private endpoint (Private Link)","Service endpoint","Public IP with an NSG","VNet peering"], correct:0, a:"Private endpoints attach a NIC with a private IP via Private Link. Service endpoints keep the service public IP, so they are less isolated."},
+  {id:"q-clouddef-1", t:"t-clouddef", q:"How does cloud-native DDoS protection differ from on-prem appliances?", options:["It auto-scales to absorb volumetric attacks at the platform edge","It runs on a single fixed-capacity box","It only protects Layer 7","It needs manual signatures per attack"], correct:0, a:"Cloud DDoS (e.g., Azure DDoS Protection) absorbs volumetric floods at the edge with elastic capacity and adaptive tuning. Pair it with a WAF for Layer 7."},
+  {id:"q-iam-1", t:"t-iam", q:"Which protocol adds an authentication identity layer on top of OAuth 2.0?", options:["OpenID Connect (OIDC)","SAML","RADIUS","Kerberos"], correct:0, a:"OAuth 2.0 is delegated authorization; OIDC layers authentication on top. SAML is XML-based enterprise SSO. Add MFA and RBAC for least privilege."},
+  {id:"q-harden-1", t:"t-harden", q:"Which is a core SSH hardening step?", options:["Disable root login and use key-based auth","Enable password-only login for convenience","Allow SSHv1 for compatibility","Permit X11 forwarding everywhere"], correct:0, a:"Set PermitRootLogin no, use key-based auth (disable passwords), restrict users, enforce SSHv2 with strong ciphers, low MaxAuthTries, and a CIS baseline."},
+  {id:"q-vuln-1", t:"t-vuln", q:"What does a CVSS base score represent?", options:["Technical severity 0 to 10 from attack vector, complexity, privileges, and CIA impact","The exact dollar cost of a breach","The patch release date","The number of affected hosts"], correct:0, a:"CVSS base scores severity 0 to 10 from intrinsic metrics. Prioritize using it together with asset criticality and exploit availability, not the number alone."},
+  {id:"q-webapp-1", t:"t-webapp", q:"What is the correct primary defense against SQL injection?", options:["Parameterized queries / prepared statements","A longer session timeout","Disabling HTTPS","Client-side validation only"], correct:0, a:"Parameterized queries separate code from data. Output encoding plus CSP defend XSS; broken access control needs server-side authorization. A WAF is a layer, not a fix."},
+  {id:"q-email-1", t:"t-email", q:"What does DMARC add on top of SPF and DKIM?", options:["Alignment plus a policy (none/quarantine/reject) plus reporting","Encryption of mail at rest","Faster mail delivery","Spam-folder color tags"], correct:0, a:"SPF authorizes sending servers; DKIM signs messages; DMARC enforces alignment, tells receivers what to do on failure, and provides reporting. Together they stop most spoofing."},
+  {id:"q-dlp-1", t:"t-dlp", q:"DLP is typically enforced at which points?", options:["Endpoint, network egress, and cloud (CASB)","Only on the firewall","Only in the SIEM","Only at the DNS resolver"], correct:0, a:"DLP works across endpoint (USB, clipboard, print), network (egress and email), and cloud/SaaS — starting from data discovery and classification."},
+];
+
 const ALL_TOPICS = SECTIONS.flatMap(s=>s.topics);
 const ALL_IDS = ALL_TOPICS.map(t=>t.id);
 const STORAGE_KEY = "netsec_lms_progress_v1";
+const QUIZ_KEY = "netsec_quiz_v1";
 const LEVEL_COLORS = { Easy:"text-emerald-400 border-emerald-500/40 bg-emerald-500/10", Medium:"text-amber-400 border-amber-500/40 bg-amber-500/10", Hard:"text-rose-400 border-rose-500/40 bg-rose-500/10" };
 const LEVEL_DOT = { Easy:"bg-emerald-400", Medium:"bg-amber-400", Hard:"bg-rose-400" };
 
@@ -282,8 +318,18 @@ function App(){
   const [noteOpen,setNoteOpen]=useState({});
   const [tab,setTab]=useState("all");
   const [query,setQuery]=useState("");
+  const [mode,setMode]=useState("learn");
+  const [quiz,setQuiz]=useState(()=>{ try{ return JSON.parse(localStorage.getItem(QUIZ_KEY))||{}; }catch(e){ return {}; }});
+  const [qSection,setQSection]=useState("all");
+  const [qLevel,setQLevel]=useState("all");
+  const [queue,setQueue]=useState([]);
+  const [picked,setPicked]=useState(null);
+  const [order,setOrder]=useState([]);
+  const [session,setSession]=useState({answered:0,correct:0});
   const progressRef=useRef(progress); progressRef.current=progress;
+  const quizRef=useRef(quiz); quizRef.current=quiz;
   const writeTimer=useRef(null);
+  const quizTimer=useRef(null);
 
   // auth state
   useEffect(()=>{
@@ -292,22 +338,39 @@ function App(){
     return ()=>unsub();
   },[]);
 
-  // live subscription to this user's progress
+  // live subscription to this user's progress + quiz
   useEffect(()=>{
     if(!useCloud||!user) return;
     const ref=db.collection("users").doc(user.uid);
     const unsub=ref.onSnapshot(snap=>{
-      if(snap.exists && snap.data().progress){
-        const remote=snap.data().progress;
-        setProgress(remote);
-        try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(remote)); }catch(e){}
+      const data=snap.exists?snap.data():null;
+      if(data && (data.progress||data.quiz)){
+        if(data.progress){ setProgress(data.progress); try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(data.progress)); }catch(e){} }
+        if(data.quiz){ setQuiz(data.quiz); try{ localStorage.setItem(QUIZ_KEY,JSON.stringify(data.quiz)); }catch(e){} }
       } else {
         // first time on the cloud: push whatever is on this device up
-        ref.set({progress:progressRef.current||{}},{merge:true});
+        ref.set({progress:progressRef.current||{}, quiz:quizRef.current||{}},{merge:true});
       }
     });
     return ()=>unsub();
   },[user]);
+
+  // (re)build the practice queue when entering practice or changing filters
+  useEffect(()=>{ if(mode==="practice") buildQueue(); },[mode,qSection,qLevel]);
+
+  // keyboard shortcuts in practice: 1-4 pick an option, enter/space advances
+  useEffect(()=>{
+    if(mode!=="practice") return;
+    const h=(e)=>{
+      if(e.target && (e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA"||e.target.tagName==="SELECT")) return;
+      if(!queue[0]) return;
+      if(picked===null){
+        if(["1","2","3","4"].includes(e.key)){ const k=parseInt(e.key,10)-1; if(k<order.length) answer(k); }
+      } else if(e.code==="Space"||e.key==="Enter"){ e.preventDefault(); next(); }
+    };
+    window.addEventListener("keydown",h);
+    return ()=>window.removeEventListener("keydown",h);
+  },[mode,picked,order,queue,quiz,qSection,qLevel]);
 
   // persist a new progress object: local immediately + cloud (debounced)
   const persist=(next)=>{
@@ -324,6 +387,46 @@ function App(){
   const signIn=()=>{ auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(()=>{}); };
   const signOut=()=>{ auth.signOut(); };
 
+  // ---- practice / flashcard engine ----
+  const persistQuiz=(next)=>{
+    setQuiz(next);
+    try{ localStorage.setItem(QUIZ_KEY,JSON.stringify(next)); }catch(e){}
+    if(useCloud && user){
+      clearTimeout(quizTimer.current);
+      quizTimer.current=setTimeout(()=>{ db.collection("users").doc(user.uid).set({quiz:next},{merge:true}).catch(()=>{}); },400);
+    }
+  };
+  const topicById=(tid)=>ALL_TOPICS.find(x=>x.id===tid)||{};
+  const sectionOfTopic=(tid)=>SECTIONS.find(s=>s.topics.some(t=>t.id===tid));
+  const boxOf=(qid)=>(quiz[qid]&&quiz[qid].box)||0;
+  const qPool=()=>QUESTIONS.filter(q=>{
+    const t=topicById(q.t);
+    if(qSection!=="all"){ const sec=sectionOfTopic(q.t); if(!sec||sec.id!==qSection) return false; }
+    if(qLevel!=="all" && t.level!==qLevel) return false;
+    return true;
+  });
+  const orderByBox=(ids,boxFn)=>ids.slice().sort((a,b)=>{ const d=boxFn(a)-boxFn(b); return d!==0?d:Math.random()-0.5; });
+  const buildQueue=()=>{ setQueue(orderByBox(qPool().map(q=>q.id),boxOf)); setPicked(null); };
+  const answer=(k)=>{
+    if(picked!==null) return;
+    const q=QUESTIONS.find(x=>x.id===queue[0]); if(!q) return;
+    setPicked(k);
+    const correct = order[k]===q.correct;
+    const b=boxOf(q.id);
+    const nb = correct?Math.min(5,b+1):0;
+    persistQuiz({...quiz,[q.id]:{box:nb, seen:((quiz[q.id]&&quiz[q.id].seen)||0)+1}});
+    setSession(s=>({answered:s.answered+1, correct:s.correct+(correct?1:0)}));
+  };
+  const next=()=>{
+    const q=QUESTIONS.find(x=>x.id===queue[0]); if(!q) return;
+    const wasCorrect = picked!==null && order[picked]===q.correct;
+    let nq=queue.slice(1);
+    if(!wasCorrect){ const pos=Math.min(3,nq.length); nq=[...nq.slice(0,pos),q.id,...nq.slice(pos)]; }
+    if(nq.length===0){ nq=orderByBox(qPool().map(x=>x.id),boxOf); }
+    setQueue(nq); // picked + option order reset by the curQ-change effect
+  };
+  const resetQuiz=()=>{ if(window.confirm("Reset all practice progress?")){ persistQuiz({}); setSession({answered:0,correct:0}); setQueue(orderByBox(qPool().map(q=>q.id),()=>0)); setPicked(null); } };
+
   const p=(id)=>progress[id]||{};
   const isDone=(id)=>!!p(id).done;
   const isStar=(id)=>!!p(id).starred;
@@ -339,6 +442,15 @@ function App(){
   const matches=(t)=>{ if(query&&!t.title.toLowerCase().includes(query.toLowerCase()))return false; if(tab==="todo")return !isDone(t.id); if(tab==="done")return isDone(t.id); if(tab==="revision")return isStar(t.id); return true; };
   let counter=0;
   const resetAll=()=>{ if(window.confirm("Reset all progress, notes and stars?")) persist({}); };
+  const quizPool=qPool();
+  const quizMastered=quizPool.filter(q=>boxOf(q.id)>=3).length;
+  const curQ=QUESTIONS.find(q=>q.id===queue[0]);
+  const curTopic=curQ?topicById(curQ.t):null;
+  // shuffle option order whenever the current question changes
+  useEffect(()=>{
+    if(curQ){ const idx=curQ.options.map((_,i)=>i); for(let i=idx.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=idx[i]; idx[i]=idx[j]; idx[j]=t; } setOrder(idx); }
+    setPicked(null);
+  },[curQ?curQ.id:null]);
 
   const Ring=()=>{ const r=26,c=2*Math.PI*r,off=c-(pct/100)*c; return (
     <svg width="68" height="68" viewBox="0 0 68 68" className="-rotate-90">
@@ -361,9 +473,14 @@ function App(){
             <SyncBadge/>
           </div>
           <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl text-slate-50 leading-tight">Network Security Engineer — Learning Track</h1>
-          <p className="text-slate-400 mt-1.5 text-sm">{ALL_IDS.length} topics in order. Tick them off, tap a depth point to watch, star for revision, add notes.</p>
+          <p className="text-slate-400 mt-1.5 text-sm">{mode==="learn"?ALL_IDS.length+" topics in order. Tick them off, tap a depth point to watch or read, star for revision, add notes.":"Multiple-choice practice — pick an answer to see if you're right, with a short explanation. Missed questions come back; mastered ones space out."}</p>
+          <div className="mt-3 inline-flex rounded-lg border border-slate-800 bg-slate-900 p-0.5">
+            <button onClick={()=>setMode("learn")} className={"font-mono text-xs px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors "+(mode==="learn"?"bg-emerald-500 text-slate-950":"text-slate-400 hover:text-slate-200")}><IBook className="w-3.5 h-3.5"/> Learn</button>
+            <button onClick={()=>setMode("practice")} className={"font-mono text-xs px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors "+(mode==="practice"?"bg-sky-500 text-slate-950":"text-slate-400 hover:text-slate-200")}><IBrain className="w-3.5 h-3.5"/> Practice</button>
+          </div>
         </header>
 
+        {mode==="learn" && (<>
         <section className="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-4 flex items-center gap-5 flex-wrap">
           <div className="relative flex items-center justify-center"><Ring/><span className="absolute font-mono text-sm text-slate-100">{pct}%</span></div>
           <div><div className="font-mono text-xs text-slate-500 uppercase tracking-wider">Overall progress</div><div className="font-display text-2xl text-slate-50">{doneCount}<span className="text-slate-600 text-lg"> / {ALL_IDS.length}</span></div></div>
@@ -377,7 +494,7 @@ function App(){
             {[["all","All"],["todo","To do"],["done","Done"],["revision","★ Revision"]].map(([k,label])=>(<button key={k} onClick={()=>setTab(k)} className={"font-mono text-xs px-3 py-1.5 rounded-full border transition-colors "+(tab===k?"bg-emerald-500 text-slate-950 border-emerald-500":"border-slate-700 text-slate-400 hover:border-slate-600")}>{label}</button>))}
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5"><ISearch className="w-3.5 h-3.5 text-slate-500"/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search topic" className="bg-transparent text-sm text-slate-200 placeholder-slate-600 focus:outline-none w-28"/></div>
+            <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5"><ISearch className="w-3.5 h-3.5 text-slate-500 shrink-0"/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search topic" className="bg-transparent text-sm text-slate-200 placeholder-slate-600 focus:outline-none w-28"/>{query&&<button onClick={()=>setQuery("")} aria-label="Clear search" title="Clear" className="text-slate-500 hover:text-slate-200 transition-colors -mr-0.5 shrink-0"><IX className="w-3.5 h-3.5"/></button>}</div>
             <button onClick={resetAll} className="flex items-center gap-1 text-xs text-slate-500 hover:text-rose-400 transition-colors"><IReset className="w-3.5 h-3.5"/> reset</button>
           </div>
         </div>
@@ -423,7 +540,55 @@ function App(){
             </section>);
           })}
         </div>
+        </>)}
 
+        {mode==="practice" && (
+        <div className="space-y-4">
+          <section className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-2"><IBrain className="w-5 h-5 text-sky-400"/><div><div className="font-mono text-xs text-slate-500 uppercase tracking-wider">Practice — flashcards</div><div className="font-display text-xl text-slate-50">{quizMastered}<span className="text-slate-600 text-base"> / {quizPool.length} mastered</span></div></div></div>
+              <div className="h-1.5 flex-1 min-w-[120px] bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-sky-500 rounded-full" style={{width:(quizPool.length?quizMastered/quizPool.length*100:0)+"%"}}/></div>
+              <div className="font-mono text-[11px] text-slate-500">session: {session.answered} answered · {session.answered?Math.round(session.correct/session.answered*100):0}% recalled</div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap mt-3">
+              <select value={qSection} onChange={e=>setQSection(e.target.value)} className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200 focus:outline-none"><option value="all">All sections</option>{SECTIONS.map(s=><option key={s.id} value={s.id}>{s.title}</option>)}</select>
+              <select value={qLevel} onChange={e=>setQLevel(e.target.value)} className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200 focus:outline-none"><option value="all">All levels</option><option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option></select>
+              <button onClick={buildQueue} className="flex items-center gap-1 text-xs text-slate-400 hover:text-sky-300 border border-slate-700 rounded-lg px-2.5 py-1.5 transition-colors"><IShuffle className="w-3.5 h-3.5"/> shuffle</button>
+              <button onClick={resetQuiz} className="flex items-center gap-1 text-xs text-slate-500 hover:text-rose-400 ml-auto transition-colors"><IReset className="w-3.5 h-3.5"/> reset practice</button>
+            </div>
+          </section>
+          {curQ?(
+            <section className="bg-slate-900 border border-slate-800 rounded-xl p-5 sm:p-6">
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
+                <span className="font-mono text-[10px] px-2 py-0.5 rounded border border-sky-500/40 bg-sky-500/10 text-sky-300">{curTopic?curTopic.title:""}</span>
+                {curTopic&&<span className={"font-mono text-[10px] px-2 py-0.5 rounded border "+LEVEL_COLORS[curTopic.level]}>{curTopic.level}</span>}
+                <span className="font-mono text-[10px] text-slate-600 ml-auto">{boxOf(curQ.id)>=3?"mastered":boxOf(curQ.id)>=1?"learning":"new"}</span>
+              </div>
+              <p className="text-slate-100 text-base sm:text-lg leading-relaxed">{curQ.q}</p>
+              <div className="mt-4 space-y-2">
+                {order.map((oi,k)=>{
+                  const isCorrect=oi===curQ.correct; const isPicked=picked===k;
+                  let cls="border-slate-700 hover:border-slate-500 text-slate-200";
+                  if(picked!==null){ cls=isCorrect?"border-emerald-500/60 bg-emerald-500/10 text-emerald-200":isPicked?"border-rose-500/60 bg-rose-500/10 text-rose-200":"border-slate-800 text-slate-500"; }
+                  return (<button key={k} disabled={picked!==null} onClick={()=>answer(k)} className={"w-full text-left flex items-start gap-2.5 px-3 py-2.5 rounded-lg border text-sm transition-colors "+cls+(picked!==null?" cursor-default":"")}>
+                    <span className="font-mono text-[11px] mt-0.5 shrink-0 opacity-60">{k+1}</span>
+                    <span className="min-w-0 break-words">{curQ.options[oi]}</span>
+                    {picked!==null&&isCorrect&&<ICheck className="w-4 h-4 ml-auto shrink-0 text-emerald-400"/>}
+                    {picked!==null&&isPicked&&!isCorrect&&<IX className="w-4 h-4 ml-auto shrink-0 text-rose-400"/>}
+                  </button>);
+                })}
+              </div>
+              {picked!==null&&(<>
+                <div className="mt-4 pt-4 border-t border-slate-800 text-slate-300 text-sm leading-relaxed"><span className={"font-mono text-[11px] uppercase tracking-wider mr-2 "+(order[picked]===curQ.correct?"text-emerald-400":"text-rose-400")}>{order[picked]===curQ.correct?"Correct":"Not quite"}</span>{curQ.a}</div>
+                <button onClick={next} className="mt-5 w-full sm:w-auto font-mono text-sm px-5 py-2.5 rounded-lg bg-sky-500 text-slate-950 hover:bg-sky-400 transition-colors">Next question <span className="opacity-60">(enter)</span></button>
+              </>)}
+            </section>
+          ):(
+            <section className="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center text-slate-400 text-sm">No questions match this filter yet. Try a different section or level.</section>
+          )}
+          <p className="font-mono text-[11px] text-slate-600 text-center">Pick an option (or press 1-4) to see the explanation. Wrong answers come back this session; correct ones move toward mastered. Progress syncs with your account.</p>
+        </div>
+        )}
         <footer className="mt-8 text-center"><p className="font-mono text-xs text-slate-600">{useCloud?"Sign in with Google to sync progress across all your devices.":"Saved on this device. Add a Firebase config to sync across devices."}</p></footer>
       </div>
     </div>
