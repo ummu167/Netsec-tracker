@@ -57,6 +57,9 @@ try {
 // ---- helpers ----
 const VID = (id) => "https://www.youtube.com/watch?v=" + id;
 const PL  = (id) => "https://www.youtube.com/playlist?list=" + id;
+const R  = (url) => ({u:url, k:"r"});
+const Vk = (id) => ({u:VID(id), k:"v"});
+const Pk = (id) => ({u:PL(id), k:"p"});
 
 const Svg = ({ className, children }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -68,6 +71,7 @@ const IRight    = (p) => <Svg {...p}><path d="m9 18 6-6-6-6"/></Svg>;
 const ICheck    = (p) => <Svg {...p}><path d="M20 6 9 17l-5-5"/></Svg>;
 const IYoutube  = (p) => <Svg {...p}><rect x="2" y="5" width="20" height="14" rx="4"/><path d="m10 9 5 3-5 3z"/></Svg>;
 const IList     = (p) => <Svg {...p}><path d="M3 6h11"/><path d="M3 12h11"/><path d="M3 18h7"/><path d="m16 12 5 3-5 3z"/></Svg>;
+const IDoc      = (p) => <Svg {...p}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/></Svg>;
 const IStar     = (p) => <Svg {...p}><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></Svg>;
 const INote     = (p) => <Svg {...p}><path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10l5-5V5a2 2 0 0 0-2-2z"/><path d="M15 21v-5a1 1 0 0 1 1-1h5"/></Svg>;
 const IExternal = (p) => <Svg {...p}><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></Svg>;
@@ -170,37 +174,37 @@ const CHANNEL_PAGES = {
 const channelUrl = (c) => CHANNEL_PAGES[c] || null;
 
 const DEEP_VIDEOS = {
-  "t-ddos":[{t:"DDoS Attack Explained — PowerCert",u:VID("ilhGh9CEIwM")},{t:"How a DDoS Attack Works — prevent & defend",u:VID("YthJmMZ0WkA")},{t:"DDoS Explained in 2 Minutes",u:VID("Rt4rna2LBZE")}],
-  "t-mitm":[{t:"What Is a Man-in-the-Middle Attack?",u:VID("SYAux_gSCck")},{t:"MITM in About a Minute",u:VID("83LOa-dYi_A")},{t:"MITM via ARP Poisoning — Ettercap demo",u:VID("0rRDI8AxY7I")}],
-  "t-lateral":[{t:"What is Lateral Movement? — SANS",u:VID("uzzDuY6hz4Y")},{t:"How Hackers Move Across Networks",u:VID("0IMSkbUKlSs")},{t:"Lateral Movement Explained (Cybersecurity 101)",u:VID("fDy3G5BBkVI")}],
-  "t-fwtypes":[{t:"What is a Firewall? — PowerCert",u:VID("kDEX1HXybrU")},{t:"Firewall Basics — types & comparison",u:VID("GXbqFBKwM2o")},{t:"Firewall Animated — types of firewall",u:VID("B6524OCPPzE")}],
-  "t-acl":[{t:"Access Control List Explained",u:VID("NF-YdKcPwiE")},{t:"Access Control List (ACL) Overview",u:VID("_Pg38IrrsiQ")},{t:"What Is ACL & How to Configure It — FS",u:VID("PLQNkgnhZPw")}],
-  "t-tls":[{t:"Practical TLS — full deep-dive series",u:PL("PLIFyRwBY_4bTwRX__Zn4-letrtpSj1mzY"),pl:true},{t:"Symmetric vs Asymmetric Encryption",u:VID("zqCVssPNosQ")}],
-  "t-vpn":[{t:"VPN Explained — PowerCert",u:VID("R-JUOpCgTZc")},{t:"What is a VPN & How Does it Work?",u:VID("7uKIB1TxGc4")}],
-  "t-zt":[{t:"Zero Trust Explained in 4 mins — IBM",u:VID("yn6CPQ9RioA")},{t:"Cybersecurity and Zero Trust — IBM",u:VID("FMMWSLIcaME")},{t:"Why Implement Zero Trust — IBM",u:VID("lT11tGaEC3s")}],
-  "t-frameworks":[{t:"NIST Cybersecurity Framework Explained",u:VID("q0tBR0Iv-kE")},{t:"The NIST CSF Core Explained",u:VID("91jb4SFnN5s")},{t:"NIST CSF 2.0 — step-by-step",u:VID("tDgxcJ52Dg8")}],
-  "t-trends":[{t:"SIEM, EDR, XDR, MDR & SOAR Explained",u:VID("lhoa0_z-7Xk")},{t:"Threat Hunting Explained — IBM",u:VID("VNp35Uw_bSM")}],
-  "t-siem":[{t:"What Is SIEM? — IBM",u:VID("9RfsRn7m7OE")},{t:"SIEM, EDR, XDR, MDR & SOAR Explained",u:VID("lhoa0_z-7Xk")}],
-  "t-ir":[{t:"Incident Response Process — CertMike",u:VID("-uwENcQzXj8")},{t:"Cybersecurity Incident Response: The 7 Phases",u:VID("tKXxror5HCE")}],
+  "t-ddos":[{t:"DDoS Attack Explained (overview) — PowerCert",u:VID("ilhGh9CEIwM")},{t:"Volumetric: DNS Amplification Attack — Radware",u:VID("FGMKUXNKb20")},{t:"Protocol: SYN Flood Attack Explained",u:VID("tClcCMrXzek")},{t:"Application-layer: Slowloris Attack — Computerphile",u:VID("XiFkyR35v2Y")},{t:"Mitigations: How a DDoS Works — prevent & defend",u:VID("YthJmMZ0WkA")}],
+  "t-mitm":[{t:"What Is a Man-in-the-Middle Attack? (overview)",u:VID("SYAux_gSCck")},{t:"ARP Spoofing / Poisoning Explained",u:VID("cZ-7R8juECk")},{t:"MITM via ARP Poisoning — Ettercap demo",u:VID("0rRDI8AxY7I")},{t:"Evil Twin / Fake AP Attack",u:VID("QarbI0vHkjc")},{t:"L2 defense: DHCP Snooping & Dynamic ARP Inspection",u:VID("YXi-fPFKnc0")}],
+  "t-lateral":[{t:"What is Lateral Movement? — SANS",u:VID("uzzDuY6hz4Y")}],
+  "t-fwtypes":[{t:"What is a Firewall? — PowerCert",u:VID("kDEX1HXybrU")},{t:"Stateful vs Stateless Firewall Explained",u:VID("PcIqdoOpZ8U")}],
+  "t-acl":[{t:"Access Control List Explained",u:VID("NF-YdKcPwiE")}],
+  "t-tls":[{t:"Practical TLS — full deep-dive series",u:PL("PLIFyRwBY_4bTwRX__Zn4-letrtpSj1mzY"),pl:true},{t:"Symmetric vs Asymmetric Encryption — Practical TLS",u:VID("o_g-M7UBqI8")},{t:"Symmetric vs Asymmetric Algorithms for Network Security",u:VID("zqCVssPNosQ")}],
+  "t-vpn":[{t:"VPN Explained — PowerCert",u:VID("R-JUOpCgTZc")}],
+  "t-zt":[{t:"Zero Trust Explained in 4 mins — IBM",u:VID("yn6CPQ9RioA")}],
+  "t-frameworks":[{t:"NIST Cybersecurity Framework Explained",u:VID("q0tBR0Iv-kE")}],
+  "t-trends":[{t:"Threat Hunting Explained — IBM",u:VID("VNp35Uw_bSM")}],
+  "t-siem":[{t:"What Is SIEM? — IBM",u:VID("9RfsRn7m7OE")}],
+  "t-ir":[{t:"Incident Response Process — CertMike",u:VID("-uwENcQzXj8")}],
   "t-azurenet":[{t:"AZ-700 Azure Networking Study Cram — John Savill",u:VID("nVZYDhB_M64")},{t:"AZ-700 Azure Network Engineer — full playlist",u:PL("PLlVtbbG169nGeFODKRZhjqdSxFpSPXVOa"),pl:true}],
   "t-clouddef":[{t:"Azure Master Class — full playlist",u:PL("PLlVtbbG169nGccbp8VSpAozu3w9xSQJoY"),pl:true},{t:"Zero Trust Explained — IBM",u:VID("yn6CPQ9RioA")}],
 };
 
 const DEPTH_LINKS = {
-  "t-ddos":[VID("ilhGh9CEIwM"),VID("ilhGh9CEIwM"),VID("Rt4rna2LBZE"),VID("YthJmMZ0WkA")],
-  "t-mitm":[VID("0rRDI8AxY7I"),VID("SYAux_gSCck"),VID("SYAux_gSCck"),VID("83LOa-dYi_A")],
-  "t-lateral":[VID("0IMSkbUKlSs"),VID("fDy3G5BBkVI"),VID("uzzDuY6hz4Y"),VID("uzzDuY6hz4Y")],
-  "t-fwtypes":[VID("GXbqFBKwM2o"),VID("kDEX1HXybrU"),VID("B6524OCPPzE")],
-  "t-acl":[VID("NF-YdKcPwiE"),VID("_Pg38IrrsiQ"),VID("PLQNkgnhZPw")],
-  "t-tls":[PL("PLIFyRwBY_4bTwRX__Zn4-letrtpSj1mzY"),VID("zqCVssPNosQ"),PL("PLIFyRwBY_4bTwRX__Zn4-letrtpSj1mzY"),PL("PLIFyRwBY_4bTwRX__Zn4-letrtpSj1mzY")],
-  "t-vpn":[VID("R-JUOpCgTZc"),VID("7uKIB1TxGc4"),VID("R-JUOpCgTZc")],
-  "t-zt":[VID("yn6CPQ9RioA"),VID("FMMWSLIcaME"),VID("lT11tGaEC3s")],
-  "t-frameworks":[VID("q0tBR0Iv-kE"),VID("91jb4SFnN5s"),VID("tDgxcJ52Dg8")],
-  "t-trends":[VID("VNp35Uw_bSM"),VID("lhoa0_z-7Xk"),VID("lhoa0_z-7Xk")],
-  "t-siem":[VID("9RfsRn7m7OE"),VID("9RfsRn7m7OE"),VID("lhoa0_z-7Xk")],
-  "t-ir":[VID("-uwENcQzXj8"),VID("tKXxror5HCE"),VID("tKXxror5HCE")],
-  "t-azurenet":[VID("nVZYDhB_M64"),PL("PLlVtbbG169nGeFODKRZhjqdSxFpSPXVOa"),PL("PLlVtbbG169nGeFODKRZhjqdSxFpSPXVOa"),VID("nVZYDhB_M64")],
-  "t-clouddef":[PL("PLlVtbbG169nGccbp8VSpAozu3w9xSQJoY"),VID("yn6CPQ9RioA"),VID("yn6CPQ9RioA")],
+  "t-ddos":[Vk("FGMKUXNKb20"),Vk("tClcCMrXzek"),Vk("XiFkyR35v2Y"),Vk("YthJmMZ0WkA")],
+  "t-mitm":[Vk("cZ-7R8juECk"),Vk("QarbI0vHkjc"),R("https://www.rapid7.com/fundamentals/man-in-the-middle-attacks/"),Vk("YXi-fPFKnc0")],
+  "t-lateral":[R("https://netwrix.com/en/cybersecurity-glossary/cyber-security-attacks/pass-the-hash-attack/"),Vk("uzzDuY6hz4Y"),Vk("uzzDuY6hz4Y"),Vk("uzzDuY6hz4Y")],
+  "t-fwtypes":[Vk("PcIqdoOpZ8U"),R("https://www.cisco.com/site/us/en/learn/topics/security/what-is-a-firewall.html"),Vk("kDEX1HXybrU")],
+  "t-acl":[R("https://www.cisco.com/c/en/us/td/docs/security/asa/asa98/configuration/firewall/asa-98-firewall-config/access-acls.html"),R("https://networkdevicesinc.com/community/blog/common-firewall-acl-mistakes"),R("https://www.network-perception.com/kb/ruleset-representation")],
+  "t-tls":[Pk("PLIFyRwBY_4bTwRX__Zn4-letrtpSj1mzY"),Vk("o_g-M7UBqI8"),Pk("PLIFyRwBY_4bTwRX__Zn4-letrtpSj1mzY"),Pk("PLIFyRwBY_4bTwRX__Zn4-letrtpSj1mzY")],
+  "t-vpn":[R("https://aws.amazon.com/what-is/ipsec/"),R("https://www.networkershome.com/fundamentals/firewall-security/vpn-fundamentals-ipsec-ssl-site-to-site/"),Vk("R-JUOpCgTZc")],
+  "t-zt":[Vk("yn6CPQ9RioA"),R("https://www.cloudflare.com/en-gb/learning/access-management/what-is-ztna/"),Vk("yn6CPQ9RioA")],
+  "t-frameworks":[Vk("q0tBR0Iv-kE"),R("https://cybertzar.com/nist-sp-standards-and-their-alignment-with-iso-27001-for-cybersecurity"),Vk("q0tBR0Iv-kE")],
+  "t-trends":[Vk("VNp35Uw_bSM"),Vk("VNp35Uw_bSM"),Vk("VNp35Uw_bSM")],
+  "t-siem":[Vk("9RfsRn7m7OE"),Vk("9RfsRn7m7OE"),Vk("9RfsRn7m7OE")],
+  "t-ir":[Vk("-uwENcQzXj8"),R("https://nvlpubs.nist.gov/nistpubs/specialpublications/nist.sp.800-61r2.pdf"),R("https://nvlpubs.nist.gov/nistpubs/specialpublications/nist.sp.800-61r2.pdf")],
+  "t-azurenet":[R("https://learn.microsoft.com/en-us/security/zero-trust/azure-networking-segmentation"),R("https://learn.microsoft.com/en-us/azure/firewall/firewall-multi-hub-spoke"),R("https://learn.microsoft.com/en-us/azure/security/fundamentals/network-overview"),Vk("nVZYDhB_M64")],
+  "t-clouddef":[R("https://learn.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview"),R("https://learn.microsoft.com/en-us/entra/identity/conditional-access/overview"),Pk("PLlVtbbG169nGccbp8VSpAozu3w9xSQJoY")],
 };
 
 const ALL_TOPICS = SECTIONS.flatMap(s=>s.topics);
@@ -289,21 +293,21 @@ function App(){
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans">
-      <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans overflow-x-hidden">
+      <div className="max-w-5xl 2xl:max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
         <header className="mb-5">
           <div className="flex items-center justify-between gap-3 flex-wrap mb-1">
             <div className="flex items-center gap-2"><IShield className="w-5 h-5 text-emerald-400"/><span className="font-mono text-xs tracking-widest text-emerald-400 uppercase">Interview Prep Sheet</span></div>
             <SyncBadge/>
           </div>
-          <h1 className="font-display text-3xl sm:text-4xl text-slate-50 leading-tight">Network Security Engineer — Learning Track</h1>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl text-slate-50 leading-tight">Network Security Engineer — Learning Track</h1>
           <p className="text-slate-400 mt-1.5 text-sm">{ALL_IDS.length} topics in order. Tick them off, tap a depth point to watch, star for revision, add notes.</p>
         </header>
 
         <section className="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-4 flex items-center gap-5 flex-wrap">
           <div className="relative flex items-center justify-center"><Ring/><span className="absolute font-mono text-sm text-slate-100">{pct}%</span></div>
           <div><div className="font-mono text-xs text-slate-500 uppercase tracking-wider">Overall progress</div><div className="font-display text-2xl text-slate-50">{doneCount}<span className="text-slate-600 text-lg"> / {ALL_IDS.length}</span></div></div>
-          <div className="flex items-center gap-4 ml-auto text-sm">
+          <div className="flex items-center gap-3 sm:gap-4 sm:ml-auto text-sm flex-wrap basis-full sm:basis-auto">
             {["Easy","Medium","Hard"].map(l=>(<div key={l} className="flex items-center gap-1.5"><span className={"w-2.5 h-2.5 rounded-full "+LEVEL_DOT[l]}/><span className="text-slate-400">{l}</span><span className="font-mono text-slate-200">{doneByLevel(l)}<span className="text-slate-600">/{byLevel(l).length}</span></span></div>))}
           </div>
         </section>
@@ -333,23 +337,23 @@ function App(){
                 <div className="hidden sm:grid gap-2 px-4 py-2 text-[11px] font-mono uppercase tracking-wider text-slate-500 border-b border-slate-800/70" style={{gridTemplateColumns:"32px 28px 1fr 150px 44px 44px 84px"}}><span>#</span><span>Done</span><span>Topic</span><span>Resource</span><span>Note</span><span>Rev</span><span className="text-right">Level</span></div>
                 {visible.map(t=>{ counter+=1; const idx=counter; const done=isDone(t.id); const browse=t.resType==="browse"; const ResIcon=t.resType==="playlist"?IList:IYoutube; return (
                   <div key={t.id} className="border-b border-slate-800/60 last:border-0">
-                    <div className="grid gap-2 px-4 py-2.5 items-center" style={{gridTemplateColumns:"32px 28px 1fr 150px 44px 44px 84px"}}>
-                      <span className="font-mono text-xs text-slate-600">{idx}</span>
-                      <button onClick={()=>toggleDone(t.id)} className="flex justify-center"><span className={"w-5 h-5 rounded-md border flex items-center justify-center transition-colors "+(done?"bg-emerald-500 border-emerald-500":"border-slate-600 hover:border-slate-400")}>{done&&<ICheck className="w-3.5 h-3.5 text-slate-950"/>}</span></button>
-                      <button onClick={()=>setDetail(d=>({...d,[t.id]:!d[t.id]}))} className={"text-left text-sm flex items-center gap-1.5 "+(done?"text-slate-500":"text-slate-100")}><span className={done?"line-through":""}>{t.title}</span>{detail[t.id]?<IDown className="w-3.5 h-3.5 text-slate-600"/>:<IRight className="w-3.5 h-3.5 text-slate-600"/>}</button>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 sm:grid sm:gap-2 sm:grid-cols-[32px_28px_1fr_150px_44px_44px_84px]">
+                      <span className="hidden sm:block font-mono text-xs text-slate-600">{idx}</span>
+                      <button onClick={()=>toggleDone(t.id)} className="flex justify-center p-1 -m-1"><span className={"w-5 h-5 rounded-md border flex items-center justify-center transition-colors "+(done?"bg-emerald-500 border-emerald-500":"border-slate-600 hover:border-slate-400")}>{done&&<ICheck className="w-3.5 h-3.5 text-slate-950"/>}</span></button>
+                      <button onClick={()=>setDetail(d=>({...d,[t.id]:!d[t.id]}))} className={"text-left text-sm flex items-center gap-1.5 flex-1 min-w-0 basis-[60%] sm:basis-auto "+(done?"text-slate-500":"text-slate-100")}><span className={done?"line-through":""}>{t.title}</span>{detail[t.id]?<IDown className="w-3.5 h-3.5 text-slate-600"/>:<IRight className="w-3.5 h-3.5 text-slate-600"/>}</button>
                       <a href={t.resUrl} target="_blank" rel="noopener noreferrer" className={"inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md font-medium transition-colors "+(browse?"bg-amber-500/15 text-amber-300 border border-amber-500/40 hover:bg-amber-500/25":"bg-rose-500/15 text-rose-300 border border-rose-500/40 hover:bg-rose-500/25")}><ResIcon className="w-3.5 h-3.5"/>{t.resType==="playlist"?"Playlist":browse?"Browse":"Watch"}</a>
-                      <button onClick={()=>setNoteOpen(n=>({...n,[t.id]:!n[t.id]}))} className="flex justify-center"><INote className={"w-4 h-4 "+(noteOf(t.id)?"text-sky-400":"text-slate-600 hover:text-slate-400")}/></button>
-                      <button onClick={()=>toggleStar(t.id)} className="flex justify-center"><IStar className={"w-4 h-4 "+(isStar(t.id)?"text-amber-400 fill-amber-400":"text-slate-600 hover:text-slate-400")}/></button>
+                      <button onClick={()=>setNoteOpen(n=>({...n,[t.id]:!n[t.id]}))} className="flex justify-center p-1.5 -m-1.5"><INote className={"w-4 h-4 "+(noteOf(t.id)?"text-sky-400":"text-slate-600 hover:text-slate-400")}/></button>
+                      <button onClick={()=>toggleStar(t.id)} className="flex justify-center p-1.5 -m-1.5"><IStar className={"w-4 h-4 "+(isStar(t.id)?"text-amber-400 fill-amber-400":"text-slate-600 hover:text-slate-400")}/></button>
                       <span className="flex justify-end"><span className={"font-mono text-[10px] px-2 py-0.5 rounded border "+LEVEL_COLORS[t.level]}>{t.level}</span></span>
                     </div>
                     {noteOpen[t.id]&&(<div className="px-4 pb-3 sm:pl-14"><textarea value={noteOf(t.id)} onChange={e=>setNote(t.id,e.target.value)} placeholder="Your notes / STAR example…" className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-sky-500/60 resize-y min-h-[60px]"/></div>)}
                     {detail[t.id]&&(<div className="px-4 pb-4 sm:pl-14 space-y-3">
-                      <div><div className="font-mono text-[11px] text-emerald-400 uppercase tracking-wider mb-1.5">Learn in depth — tap a point to watch</div>
-                        <ul className="space-y-1.5">{t.depth.map((d,i)=>{ const u=DEPTH_LINKS[t.id]&&DEPTH_LINKS[t.id][i]; const isPl=u&&u.indexOf("playlist?list=")!==-1; const Ico=isPl?IList:IYoutube; return (
-                          <li key={i} className="text-sm flex gap-2 items-start"><span className="text-slate-600 mt-0.5">▸</span>{u?(<a href={u} target="_blank" rel="noopener noreferrer" className="group flex items-start gap-1.5 text-slate-300 hover:text-rose-300 transition-colors"><span className="underline decoration-slate-700 decoration-dotted underline-offset-2 group-hover:decoration-rose-400">{d}</span><span className={"inline-flex items-center justify-center w-4 h-4 rounded shrink-0 mt-0.5 "+(isPl?"bg-amber-500/15 text-amber-300":"bg-rose-500/15 text-rose-300")}><Ico className="w-3 h-3"/></span></a>):<span className="text-slate-300">{d}</span>}</li>); })}</ul>
+                      <div><div className="font-mono text-[11px] text-emerald-400 uppercase tracking-wider mb-1.5">Learn in depth — tap a point to watch or read</div>
+                        <ul className="space-y-1.5">{t.depth.map((d,i)=>{ const lnk=DEPTH_LINKS[t.id]&&DEPTH_LINKS[t.id][i]; const u=lnk&&lnk.u; const k=lnk&&lnk.k; const Ico=k==="p"?IList:k==="r"?IDoc:IYoutube; const iconCls=k==="r"?"bg-sky-500/15 text-sky-300":k==="p"?"bg-amber-500/15 text-amber-300":"bg-rose-500/15 text-rose-300"; const hoverCls=k==="r"?"hover:text-sky-300":"hover:text-rose-300"; const decoCls=k==="r"?"group-hover:decoration-sky-400":"group-hover:decoration-rose-400"; return (
+                          <li key={i} className="text-sm flex gap-2 items-start"><span className="text-slate-600 mt-0.5">▸</span>{u?(<a href={u} target="_blank" rel="noopener noreferrer" className={"group flex items-start gap-1.5 min-w-0 text-slate-300 transition-colors "+hoverCls}><span className={"break-words underline decoration-slate-700 decoration-dotted underline-offset-2 "+decoCls}>{d}</span><span className={"inline-flex items-center justify-center w-4 h-4 rounded shrink-0 mt-0.5 "+iconCls}><Ico className="w-3 h-3"/></span></a>):<span className="text-slate-300">{d}</span>}</li>); })}</ul>
                       </div>
                       {DEEP_VIDEOS[t.id]&&(<div><div className="font-mono text-[11px] text-rose-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5"><IYoutube className="w-3.5 h-3.5"/> Deep-dive videos — click to watch</div>
-                        <ul className="space-y-1.5">{DEEP_VIDEOS[t.id].map((v,i)=>{ const Ico=v.pl?IList:IYoutube; return (<li key={i} className="flex items-center gap-2"><a href={v.u} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-slate-200 hover:text-rose-300 transition-colors"><span className={"inline-flex items-center justify-center w-5 h-5 rounded shrink-0 "+(v.pl?"bg-amber-500/15 text-amber-300":"bg-rose-500/15 text-rose-300")}><Ico className="w-3.5 h-3.5"/></span><span>{v.t}{v.pl?"  (playlist)":""}</span></a></li>); })}</ul>
+                        <ul className="space-y-1.5">{DEEP_VIDEOS[t.id].map((v,i)=>{ const Ico=v.pl?IList:IYoutube; return (<li key={i} className="flex items-center gap-2"><a href={v.u} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 min-w-0 text-sm text-slate-200 hover:text-rose-300 transition-colors"><span className={"inline-flex items-center justify-center w-5 h-5 rounded shrink-0 "+(v.pl?"bg-amber-500/15 text-amber-300":"bg-rose-500/15 text-rose-300")}><Ico className="w-3.5 h-3.5"/></span><span className="break-words">{v.t}{v.pl?"  (playlist)":""}</span></a></li>); })}</ul>
                       </div>)}
                       <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-2.5"><div className="font-mono text-[11px] text-amber-400 uppercase tracking-wider mb-1">Interview angle</div><p className="text-sm text-slate-300 leading-relaxed">{t.interview}</p></div>
                       <div className="flex items-center gap-2 flex-wrap"><span className="font-mono text-[11px] text-slate-500 uppercase tracking-wider">More channels:</span>{t.channels.map(c=>{ const u=channelUrl(c); return u?(<a key={c} href={u} target="_blank" rel="noopener noreferrer" className="text-xs text-sky-300 hover:text-sky-200 inline-flex items-center gap-1">{c}<IExternal className="w-3 h-3 opacity-70"/></a>):<span key={c} className="text-xs text-slate-400">{c}</span>; })}</div>
