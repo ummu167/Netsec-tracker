@@ -288,7 +288,7 @@ function App(){
 
   const SyncBadge=()=>{
     if(syncState==="local") return <span className="font-mono text-[11px] text-slate-500 flex items-center gap-1"><ICloud className="w-3.5 h-3.5"/> this device only</span>;
-    if(syncState==="signedout") return <button onClick={signIn} className="font-mono text-xs px-3 py-1.5 rounded-lg bg-sky-500 text-slate-950 hover:bg-sky-400 transition-colors flex items-center gap-1.5"><ICloud className="w-3.5 h-3.5"/> Sign in to sync</button>;
+    if(syncState==="signedout") return <button onClick={signIn} className="font-mono text-xs px-3 py-1.5 rounded-lg bg-sky-500 text-slate-950 hover:bg-sky-400 transition-colors flex items-center gap-1.5"><ICloud className="w-3.5 h-3.5"/> Sign in</button>;
     return <div className="flex items-center gap-2"><span className="font-mono text-[11px] text-emerald-400 flex items-center gap-1"><ICloud className="w-3.5 h-3.5"/> synced{user&&user.email?" · "+user.email:""}</span><button onClick={signOut} className="font-mono text-[11px] text-slate-500 hover:text-rose-400">sign out</button></div>;
   };
 
